@@ -162,6 +162,23 @@
             border-color: transparent; 
         }
 
+        /* Fix Header di Mobile Biar Rapih */
+        @media (max-width: 600px) {
+            .nav-content {
+                flex-direction: column;
+                justify-content: center;
+                gap: 12px;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .logo {
+                font-size: 1.3rem;
+            }
+        }
+
         /* Hero */
         .hero { 
             text-align: center; 
@@ -547,7 +564,7 @@
             gap: 20px; 
         }
 
-        /* Custom Modal Styles (Peringatan Umum) */
+        /* Custom Modal Styles (Peringatan Umum) - FIXED MOBILE SCROLL */
         .modal-overlay { 
             position: fixed; 
             top: 0; 
@@ -563,6 +580,7 @@
             opacity: 0; 
             visibility: hidden; 
             transition: all 0.3s ease; 
+            padding: 15px; /* Biar ada jarak dari pinggir layar di HP */
         }
 
         .modal-overlay.active { 
@@ -574,11 +592,16 @@
             background: var(--surface-color); 
             border: 1px solid var(--border-color); 
             border-radius: var(--radius); 
-            width: 90%; 
+            width: 100%; 
             max-width: 400px; 
             box-shadow: var(--shadow); 
             transform: translateY(20px); 
             transition: transform 0.3s ease; 
+            
+            /* Kunci tinggi maksimal dan bikin flex buat scroll internal */
+            max-height: 90vh; 
+            display: flex;
+            flex-direction: column;
         }
 
         .modal-overlay.active .custom-modal { 
@@ -593,6 +616,7 @@
             gap: 10px; 
             font-weight: 600; 
             font-size: 1.1rem; 
+            flex-shrink: 0; /* Biar header ga mengecil */
         }
 
         .modal-header.premium { color: #f59e0b; }
@@ -604,6 +628,10 @@
             color: var(--text-muted); 
             font-size: 0.95rem; 
             line-height: 1.6; 
+            
+            /* Ini yang bikin bisa di-scroll di HP */
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
         }
 
         .modal-footer { 
@@ -615,6 +643,7 @@
             background: var(--surface-light); 
             border-bottom-left-radius: var(--radius); 
             border-bottom-right-radius: var(--radius); 
+            flex-shrink: 0; /* Biar footer ngunci di bawah */
         }
 
         /* Payment Modal Khusus QRIS */
@@ -1125,6 +1154,12 @@
             document.getElementById('supportQrisSection').style.display = 'block';
             document.getElementById('btnConfirmSupport').style.display = 'block';
             document.getElementById('btnGenSupport').style.display = 'none';
+            
+            // Auto scroll modal ke bawah biar tombol WA kelihatan di HP
+            setTimeout(() => {
+                const modalBody = document.querySelector('#supportModal .modal-body');
+                modalBody.scrollTop = modalBody.scrollHeight;
+            }, 100);
         }
 
         function confirmSupportWA() {
@@ -1216,6 +1251,7 @@
             if (selectedOption.dataset.locked === "true") {
                 showModal('premium', 'MODEL DIKUNCI', 'Model AI ini khusus untuk pengguna <b>Premium</b>. Silakan upgrade akun Anda untuk membuka kunci semua model AI.', true);
                 
+                // Kembalikan ke opsi yang nggak dikunci
                 for (let i = 0; i < this.options.length; i++) {
                     if (this.options[i].dataset.locked !== "true") {
                         this.selectedIndex = i;
