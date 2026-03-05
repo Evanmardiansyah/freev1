@@ -26,6 +26,7 @@
             --primary-color: #8b5cf6;
             --border-color: #374151;
             --success: #10b981;
+            --info: #3b82f6;
             --radius: 16px;
             --shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
             --glow: 0 0 20px rgba(139, 92, 246, 0.3);
@@ -78,6 +79,8 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .logo { 
@@ -95,6 +98,27 @@
             display: flex; 
             gap: 10px; 
             align-items: center; 
+        }
+
+        .btn-group { 
+            background: rgba(59, 130, 246, 0.1); 
+            border: 1px solid var(--info); 
+            color: var(--info); 
+            padding: 8px 15px; 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px;
+        }
+
+        .btn-group:hover { 
+            background: var(--info); 
+            color: white; 
         }
 
         .btn-support { 
@@ -682,9 +706,14 @@
                 <i class="fa-solid fa-bolt"></i> ViralContent AI
             </div>
             <div class="header-actions">
-                <a href="javascript:void(0)" onclick="openSupportModal()" class="btn-support">
-                    <i class="fa-solid fa-hand-holding-dollar"></i> Support Admin
+                <a href="https://chat.whatsapp.com/LFqHiHg61znLMYjErUsX2m" target="_blank" class="btn-group">
+                    <i class="fa-solid fa-users"></i> Grup WA
                 </a>
+                
+                <a href="javascript:void(0)" onclick="openSupportModal()" class="btn-support">
+                    <i class="fa-solid fa-hand-holding-dollar"></i> Support
+                </a>
+
                 <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
                     <i class="fa-solid fa-moon"></i>
                 </button>
@@ -981,7 +1010,7 @@
                 </div>
 
                 <div class="qris-box">
-                    <img src="https://drive.google.com/uc?export=view&id=1ye-eNx_62CouDAvujVWbgwsYZrvXOpvJ" alt="QRIS Pembayaran">
+                    <img src="qris.jpg" alt="QRIS Pembayaran">
                     <div style="margin-top: 10px; font-weight: 600; color: #333;">A.n ViralContent AI</div>
                 </div>
 
@@ -1018,7 +1047,7 @@
                     </div>
 
                     <div class="qris-box">
-                        <img src="https://drive.google.com/uc?export=view&id=1ye-eNx_62CouDAvujVWbgwsYZrvXOpvJ" alt="QRIS Support">
+                        <img src="qris.jpg" alt="QRIS Support">
                         <div style="margin-top: 10px; font-weight: 600; color: #333;">A.n ViralContent AI</div>
                     </div>
                 </div>
