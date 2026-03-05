@@ -6,6 +6,15 @@
     <title>ViralContent AI Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -479,7 +488,7 @@
 
         .gap-20 { display: flex; flex-direction: column; gap: 20px; }
 
-        /* Custom Modal Alert Styles */
+        /* Custom Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -544,6 +553,41 @@
             background: var(--surface-light);
             border-bottom-left-radius: var(--radius);
             border-bottom-right-radius: var(--radius);
+        }
+
+        /* Visitor Stats Custom UI */
+        .visitor-stats {
+            margin-top: 30px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-box {
+            background: var(--surface-light);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
         }
     </style>
 </head>
@@ -674,6 +718,31 @@
                         </button>
                     </form>
                 </div>
+
+                <div class="visitor-stats">
+                    <div class="card-title" style="font-size: 1rem;"><i class="fa-solid fa-chart-simple"></i> Statistik Pengunjung</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Data Live Serverless</p>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Hari Ini</div>
+                            <div class="stat-number" id="stat-today">...</div> 
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Minggu Ini</div>
+                            <div class="stat-number" id="stat-week">...</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Bulan Ini</div>
+                            <div class="stat-number" id="stat-month">...</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Total (All-Time)</div>
+                            <div class="stat-number" id="stat-all">...</div>
+                        </div>
+                    </div>
+                </div>
+
             </aside>
 
             <main>
@@ -817,7 +886,6 @@
             const bodyEl = document.getElementById('modalBody');
             const footerEl = document.getElementById('modalFooter');
 
-            // Set Header Color and Icon based on type (premium, error, success)
             header.className = 'modal-header ' + type;
             let icon = 'fa-bell';
             if(type === 'premium') icon = 'fa-lock';
@@ -845,7 +913,6 @@
             document.getElementById('customModal').classList.remove('active');
         }
 
-        // Toggle Panduan API
         function toggleApiGuide() {
             const guideBox = document.getElementById('apiGuideBox');
             if (guideBox.style.display === 'none' || guideBox.style.display === '') {
@@ -855,33 +922,52 @@
             }
         }
 
-        // Fungsi Redirect ke WhatsApp
         function contactWhatsApp() {
             const waNumber = "6289679359605";
             const text = encodeURIComponent("Halo Admin, saya mau berlangganan Premium ViralContent AI Studio untuk unlock semua model AI dan fitur lanjutannya.");
             window.open(`https://wa.me/${waNumber}?text=${text}`, '_blank');
         }
 
-        // Init: Check local storage for saved API Key when page loads
+        // Init ketika web dibuka
         document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. Load API Key jika ada ---
             const savedKey = localStorage.getItem('viral_studio_api_key');
             if (savedKey) {
                 document.getElementById('apiKey').value = savedKey;
                 const statusEl = document.getElementById('key-status');
                 statusEl.innerText = "✓ API Key dimuat. Sedang mengambil daftar model...";
                 statusEl.style.color = "var(--success)";
-                fetchAvailableModels(savedKey); // Auto-fetch model
+                fetchAvailableModels(savedKey);
             }
+
+            // --- 2. Hitung & Tampilkan Visitor Stats ---
+            // Link Worker lu udah dimasukkin ke sini bro!
+            const WORKER_URL = "https://viral-visitor.evanmardiansyah38.workers.dev/?action=visit";
+            
+            fetch(WORKER_URL)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('stat-today').innerText = data.today.toLocaleString('id-ID');
+                    document.getElementById('stat-week').innerText = data.week.toLocaleString('id-ID');
+                    document.getElementById('stat-month').innerText = data.month.toLocaleString('id-ID');
+                    document.getElementById('stat-all').innerText = data.total.toLocaleString('id-ID');
+                })
+                .catch(err => {
+                    console.error("Gagal load stats", err);
+                    document.getElementById('stat-today').innerText = "-";
+                    document.getElementById('stat-week').innerText = "-";
+                    document.getElementById('stat-month').innerText = "-";
+                    document.getElementById('stat-all').innerText = "-";
+                });
         });
 
         // Event Listener untuk Model Lock
         document.getElementById('modelSelect').addEventListener('change', function(e) {
             const selectedOption = this.options[this.selectedIndex];
             if (selectedOption.dataset.locked === "true") {
-                // Gunakan custom modal untuk premium alert
                 showModal('premium', 'MODEL DIKUNCI', 'Model AI ini khusus untuk pengguna <b>Premium</b>. Silakan hubungi Admin via WhatsApp untuk berlangganan dan membuka kunci semua model AI.', true);
                 
-                // Kembalikan pilihan ke model gratis yang tersedia
                 for (let i = 0; i < this.options.length; i++) {
                     if (this.options[i].dataset.locked !== "true") {
                         this.selectedIndex = i;
@@ -891,7 +977,6 @@
             }
         });
 
-        // Save API Key & Fetch Models
         function saveApiKey() {
             const keyInput = document.getElementById('apiKey').value.trim();
             const statusEl = document.getElementById('key-status');
@@ -907,7 +992,6 @@
             }
         }
 
-        // Fetch Dynamic Models from Google API
         async function fetchAvailableModels(apiKey) {
             const selectEl = document.getElementById('modelSelect');
             const statusEl = document.getElementById('key-status');
@@ -923,7 +1007,6 @@
 
                 selectEl.innerHTML = '';
                 
-                // Filter models that support generateContent and contain "gemini"
                 const validModels = data.models.filter(m => 
                     m.supportedGenerationMethods && 
                     m.supportedGenerationMethods.includes('generateContent') &&
@@ -935,15 +1018,13 @@
                     statusEl.innerText = "✗ API Key valid tapi tidak punya akses model generateContent.";
                     statusEl.style.color = "#f59e0b";
                 } else {
-                    // STRICT MODEL LOCKING: Hanya allow exact model name ini, selain ini digembok
                     const exactFreeModels = ['models/gemini-2.0-flash', 'models/gemini-2.5-flash'];
 
                     validModels.forEach(m => {
                         const isFree = exactFreeModels.includes(m.name);
                         const option = document.createElement('option');
-                        option.value = m.name; // Formatnya selalu 'models/nama-model'
+                        option.value = m.name; 
                         
-                        // Tandai UI dropdown jika model dikunci
                         if (isFree) {
                             option.textContent = `${m.displayName} (${m.version})`;
                         } else {
@@ -954,7 +1035,6 @@
                         selectEl.appendChild(option);
                     });
                     
-                    // Pastikan yang ter-select default adalah model gratis
                     for (let i = 0; i < selectEl.options.length; i++) {
                         if (selectEl.options[i].dataset.locked !== "true") {
                             selectEl.selectedIndex = i;
@@ -975,7 +1055,6 @@
             }
         }
 
-        // Theme Toggle
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
             const icon = document.querySelector('.theme-toggle i');
@@ -988,7 +1067,6 @@
             }
         }
 
-        // Copy Function
         function copyText(elementId) {
             const el = document.getElementById(elementId);
             let text = el.innerText;
@@ -997,7 +1075,6 @@
             });
         }
 
-        // Format Text to basic HTML (paragraphs, bold)
         function formatCopywriting(text) {
             let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             return formatted.split('\n').map(line => {
@@ -1006,7 +1083,6 @@
             }).join('');
         }
 
-        // Animate Progress Bars
         function animateBars(viral, eng, emo) {
             setTimeout(() => {
                 document.getElementById('bar-viral').style.width = viral + '%';
@@ -1020,11 +1096,9 @@
             }, 100);
         }
 
-        // Main Generate Logic
         async function handleGenerate(e) {
             if(e) e.preventDefault();
             
-            // Get API Key and Model
             const userApiKey = document.getElementById('apiKey').value.trim();
             const modelSelect = document.getElementById('modelSelect');
             const selectedModel = modelSelect.value; 
@@ -1040,14 +1114,12 @@
                 return;
             }
 
-            // Validasi Terakhir Jika User Memaksa Pakai Inspect Element untuk model Premium
             const selectedOption = modelSelect.options[modelSelect.selectedIndex];
             if (selectedOption.dataset.locked === "true") {
                 showModal('premium', 'Akses Ditolak', 'Model AI ini memerlukan langganan Premium. Silakan upgrade akun Anda.', true);
                 return;
             }
 
-            // Get Form Data
             const niche = document.getElementById('niche').value;
             const audience = document.getElementById('audience').value;
             const platform = document.getElementById('platform').value;
@@ -1056,7 +1128,6 @@
             const length = document.getElementById('length').value;
             const emotion = document.getElementById('emotion').value;
 
-            // UI State
             const btn = document.getElementById('btnGenerate');
             const loader = document.getElementById('loader');
             const resultsArea = document.getElementById('resultsArea');
@@ -1066,7 +1137,6 @@
             resultsArea.style.display = 'none';
             loader.style.display = 'block';
 
-            // Reset UI Data
             document.getElementById('out-image').style.display = 'none';
             document.getElementById('img-placeholder-icon').style.display = 'block';
             document.getElementById('bar-viral').style.width = '0%';
@@ -1105,7 +1175,6 @@ PENTING: Anda HARUS merespon HANYA dengan format JSON yang valid. Jangan gunakan
 }`;
 
             try {
-                // Fetch using Dynamic Model Endpoint
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${selectedModel}:generateContent?key=${userApiKey}`, {
                     method: "POST",
                     headers: {
@@ -1120,29 +1189,22 @@ PENTING: Anda HARUS merespon HANYA dengan format JSON yang valid. Jangan gunakan
 
                 const data = await response.json();
                 
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
+                if (data.error) throw new Error(data.error.message);
 
                 let rawText = data.candidates[0].content.parts[0].text;
-                
-                // Clean up possible markdown wrappers from response
                 rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
                 
                 const result = JSON.parse(rawText);
 
-                // Populate UI
                 document.getElementById('out-titles').innerHTML = result.titles.map(t => `<li><i class="fa-solid fa-fire" style="color: #f59e0b;"></i> ${t}</li>`).join('');
                 document.getElementById('out-copywriting').innerHTML = formatCopywriting(result.copywriting);
                 document.getElementById('out-ctas').innerHTML = result.ctas.map(c => `<li><i class="fa-regular fa-hand-pointer" style="color: var(--primary-color);"></i> ${c}</li>`).join('');
                 document.getElementById('out-prompt').innerText = result.imagePrompt;
                 document.getElementById('out-hashtags').innerText = result.hashtags;
 
-                // Load Fake Image Preview using free public API (Pollinations) based on Gemini's prompt
                 const encodedPrompt = encodeURIComponent(result.imagePrompt);
                 document.getElementById('out-image').src = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=400&nologo=true`;
 
-                // Show Results & Animate
                 loader.style.display = 'none';
                 resultsArea.style.display = 'flex';
                 resultsArea.style.flexDirection = 'column';
