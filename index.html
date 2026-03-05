@@ -478,6 +478,73 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .gap-20 { display: flex; flex-direction: column; gap: 20px; }
+
+        /* Custom Modal Alert Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-modal {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .custom-modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .modal-header.premium { color: #f59e0b; }
+        .modal-header.error { color: #ef4444; }
+        .modal-header.success { color: var(--success); }
+
+        .modal-body {
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: var(--surface-light);
+            border-bottom-left-radius: var(--radius);
+            border-bottom-right-radius: var(--radius);
+        }
     </style>
 </head>
 <body>
@@ -729,7 +796,55 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="customModal">
+        <div class="custom-modal">
+            <div class="modal-header" id="modalHeader">
+                <i class="fa-solid fa-bell"></i> <span id="modalTitle">Pemberitahuan</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Pesan ada di sini.
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                </div>
+        </div>
+    </div>
+
     <script>
+        // Custom Modal Function System
+        function showModal(type, title, message, isPremium = false) {
+            const overlay = document.getElementById('customModal');
+            const header = document.getElementById('modalHeader');
+            const bodyEl = document.getElementById('modalBody');
+            const footerEl = document.getElementById('modalFooter');
+
+            // Set Header Color and Icon based on type (premium, error, success)
+            header.className = 'modal-header ' + type;
+            let icon = 'fa-bell';
+            if(type === 'premium') icon = 'fa-lock';
+            if(type === 'error') icon = 'fa-circle-exclamation';
+            if(type === 'success') icon = 'fa-circle-check';
+
+            header.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${title}</span>`;
+            bodyEl.innerHTML = message;
+
+            if (isPremium) {
+                footerEl.innerHTML = `
+                    <button class="btn btn-outline" style="padding: 8px 16px; font-size: 0.9rem; width: auto;" onclick="closeModal()">Tutup</button>
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem; width: auto;" onclick="contactWhatsApp()">Hubungi Admin</button>
+                `;
+            } else {
+                footerEl.innerHTML = `
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem; width: auto;" onclick="closeModal()">OK Mengerti</button>
+                `;
+            }
+
+            overlay.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.remove('active');
+        }
+
         // Toggle Panduan API
         function toggleApiGuide() {
             const guideBox = document.getElementById('apiGuideBox');
@@ -763,8 +878,8 @@
         document.getElementById('modelSelect').addEventListener('change', function(e) {
             const selectedOption = this.options[this.selectedIndex];
             if (selectedOption.dataset.locked === "true") {
-                alert("🔒 MODEL DIKUNCI\n\nModel AI ini khusus untuk pengguna Premium. Silakan hubungi Admin via WhatsApp untuk berlangganan dan membuka kunci semua model.");
-                contactWhatsApp(); // Langsung buka tab WA
+                // Gunakan custom modal untuk premium alert
+                showModal('premium', 'MODEL DIKUNCI', 'Model AI ini khusus untuk pengguna <b>Premium</b>. Silakan hubungi Admin via WhatsApp untuk berlangganan dan membuka kunci semua model AI.', true);
                 
                 // Kembalikan pilihan ke model gratis yang tersedia
                 for (let i = 0; i < this.options.length; i++) {
@@ -820,11 +935,11 @@
                     statusEl.innerText = "✗ API Key valid tapi tidak punya akses model generateContent.";
                     statusEl.style.color = "#f59e0b";
                 } else {
-                    // Cek model yang di-unlock (Free)
-                    const freeModels = ['gemini-2.0-flash', 'gemini-2.5-flash'];
+                    // STRICT MODEL LOCKING: Hanya allow exact model name ini, selain ini digembok
+                    const exactFreeModels = ['models/gemini-2.0-flash', 'models/gemini-2.5-flash'];
 
                     validModels.forEach(m => {
-                        const isFree = freeModels.some(free => m.name.includes(free));
+                        const isFree = exactFreeModels.includes(m.name);
                         const option = document.createElement('option');
                         option.value = m.name; // Formatnya selalu 'models/nama-model'
                         
@@ -878,7 +993,7 @@
             const el = document.getElementById(elementId);
             let text = el.innerText;
             navigator.clipboard.writeText(text).then(() => {
-                alert('Berhasil dicopy ke clipboard!');
+                showModal('success', 'Tersalin', 'Teks berhasil disalin ke clipboard!');
             });
         }
 
@@ -915,20 +1030,20 @@
             const selectedModel = modelSelect.value; 
 
             if (!userApiKey) {
-                alert("Silakan masukkan Gemini API Key terlebih dahulu!");
+                showModal('error', 'API Key Kosong', 'Silakan masukkan Gemini API Key terlebih dahulu di panel konfigurasi!');
                 document.getElementById('apiKey').focus();
                 return;
             }
 
             if (!selectedModel) {
-                alert("Silakan tunggu / pastikan model AI sudah ter-load!");
+                showModal('error', 'Model Belum Siap', 'Silakan tunggu atau pastikan model AI sudah ter-load dengan benar!');
                 return;
             }
 
             // Validasi Terakhir Jika User Memaksa Pakai Inspect Element untuk model Premium
             const selectedOption = modelSelect.options[modelSelect.selectedIndex];
             if (selectedOption.dataset.locked === "true") {
-                alert("Akses Ditolak! Model AI ini memerlukan langganan Premium.");
+                showModal('premium', 'Akses Ditolak', 'Model AI ini memerlukan langganan Premium. Silakan upgrade akun Anda.', true);
                 return;
             }
 
@@ -1034,7 +1149,7 @@ PENTING: Anda HARUS merespon HANYA dengan format JSON yang valid. Jangan gunakan
                 animateBars(result.viralScore || 80, result.engagementScore || 75, result.emotionScore || 85);
 
             } catch (error) {
-                alert("Terjadi kesalahan:\n" + error.message + "\n\nPastikan API Key Anda valid, limit belum habis, dan format JSON dari AI sesuai.");
+                showModal('error', 'Terjadi Kesalahan', error.message + '<br><br>Pastikan API Key Anda valid, kuota limit belum habis, dan format dari AI sesuai.');
                 console.error("Generation Error:", error);
                 loader.style.display = 'none';
             } finally {
