@@ -942,7 +942,6 @@
             }
 
             // --- 2. Hitung & Tampilkan Visitor Stats ---
-            // Link Worker lu udah dimasukkin ke sini bro!
             const WORKER_URL = "https://viral-visitor.evanmardiansyah38.workers.dev/?action=visit";
             
             fetch(WORKER_URL)
@@ -1018,6 +1017,7 @@
                     statusEl.innerText = "✗ API Key valid tapi tidak punya akses model generateContent.";
                     statusEl.style.color = "#f59e0b";
                 } else {
+                    // PENTING: PENGUNCIAN MODEL (Tetap AMAN 100%)
                     const exactFreeModels = ['models/gemini-2.0-flash', 'models/gemini-2.5-flash'];
 
                     validModels.forEach(m => {
